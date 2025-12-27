@@ -54,7 +54,13 @@ sample_list <- list(
 # -----------------------------
 ui <- fluidPage(
   useShinyjs(),
-  titlePanel("X̄ & R Chart"),
+  div(
+    class = "title-strip",
+    h1(
+      HTML("X̄ & R Chart"),
+      class = "title-text"
+    )
+  ),
   
   tags$head(
     tags$style(HTML("
@@ -76,15 +82,67 @@ ui <- fluidPage(
 
 /* Keep boxes/well panels default (white/light gray) */
 .box, .well {
-  background-color: #f7f7f7 !important;
+  background-color: #D3DFC9 !important;
   color: #000000 !important;  /* default text color */
+}
+
+/* ===== Top Title Strip ===== */
+.title-strip {
+  background-color: #2C6F5A;   /* Dark green strip */
+  padding: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  border-bottom: 4px solid #33B28C; /* eye-catching accent */
+}
+
+/* Title text */
+.title-text {
+  color: #f2fff2;  /* light green (same family as background) */
+  font-weight: 700;
+  font-size: 34px;
+  margin: 0;
+  letter-spacing: 1px;
 }
 "))
   ),
   
   sidebarLayout(
     sidebarPanel(
-      h4(HTML("Phase I: Add Data <small>(20–25 samples recommended)</small>")),
+      div(
+        style = "
+    background-color:#E6F4EA;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
+    border:2px solid #2C6F5A;
+    text-align:center;
+  ",
+        
+        HTML("
+    <div style='font-size:26px; font-weight:700; color:#18392B;'>
+      📊 X̄ & R Chatr Manual
+    </div>
+    
+    <div style='font-size:15px; color:#2C6F5A; margin-top:6px;'>
+      X̄ & R Charts • SPC • Process Monitoring
+    </div>
+    
+    <div style='font-size:22px; margin-top:8px;'>
+      📈 ✔️ 🧪
+    </div>
+  "),
+        
+        br(),
+        
+        downloadButton(
+          "download_manual",
+          "Download User Manual (PDF)",
+          class = "btn-success"
+        )
+      ),
+      
+      HTML("<h3 style='color:#18392B; font-weight:bold; font-size:28px; margin-bottom:10px;'>Phase I: Add Data</h3>"),
+      HTML("<p style='font-size:14px; color:#2C6F5A;'>20–25 samples recommended</p>"),
       selectInput("sample_choice", "Choose Sample Dataset:",
                   choices = names(sample_list)),
       fileInput(
@@ -104,8 +162,11 @@ ui <- fluidPage(
         value = TRUE
       ),
       
-      hr(),
-      h4("Phase II: Add One Subgroup"),
+      
+      div(style = "border-top: 2px solid #2C6F5A; margin: 50px 0;"),
+      
+      
+      HTML("<h3 style='color:#18392B; font-weight:bold; font-size:28px; margin-top:20px;'>Phase II: Add One Subgroup</h3>"),
       uiOutput("phase2_inputs"),
       
       actionButton("add_phase2", "Add Phase II Subgroup",
@@ -118,7 +179,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         
-        tabPanel("Phase I Charts",
+        tabPanel("Charts",
                  uiOutput("phase1_warnings"),
                  wellPanel(
                    h4("R Chart"),
@@ -137,6 +198,25 @@ ui <- fluidPage(
         ),
         
         tabPanel("Phase I Data",
+                 div(
+                   style = "
+    padding:10px;
+    border-left:5px solid #5f7f6e
+
+;
+    font-size:22px;
+    margin-bottom:12px;
+  ",
+                   HTML("
+    <span style='color:#00C853
+
+; font-weight:bold;'>
+    ✔ Out-of-control points are <u>highlighted</u> in the tables below.
+         To remove them, <b>select the corresponding rows</b> and click
+         <b>'Delete Selected Rows'</b> at the bottom of this page.
+    </span>
+  ")
+                 ),
                  h4("Original Data"),
                  DTOutput("original_data_table"),
                  br(),
@@ -465,6 +545,34 @@ server <- function(input, output, session) {
     ooc
   })
   
+  output$download_manual <- downloadHandler(
+    filename = function() {
+      "Xbar_R_User_Manual.pdf"
+    },
+    content = function(file) {
+      file.copy("Xbar_R_User_Manual.pdf", file)
+    }
+  )
+  
+  
+  # ---- Show warning if any out-of-control points exist ----
+  output$phase1_warnings <- renderUI({
+    ooc <- ooc_subgroups()
+    
+    if (any(ooc)) {
+      div(
+        style = "color: red; font-weight: bold; font-size: 18px; margin-bottom: 10px;",
+        HTML("⚠️ Some Phase I points are out-of-control! Before simply deleting them, try to identify whether there are <b>non-random patterns</b> and look for <b>assignable causes</b>. 
+           If you determine a point is due to special cause, you can delete it in the 'Phase I Data' tab.")
+      )
+    } else {
+      NULL
+    }
+  })
+  
+  
+  
+  
   # ---- Charts ----
   output$r_chart <- renderPlot({
     s <- r_stats()
@@ -594,13 +702,13 @@ server <- function(input, output, session) {
   
   
   # ---- Text summaries ----
-  output$rbar_text <- renderText(paste("R̄ =", round(r_stats()$Rbar, 3)))
-  output$ucl_text  <- renderText(paste("R UCL =", round(r_stats()$UCL, 3)))
-  output$lcl_text  <- renderText(paste("R LCL =", round(r_stats()$LCL, 3)))
+  output$rbar_text <- renderText(paste("CL  =", round(r_stats()$Rbar, 3)))
+  output$ucl_text  <- renderText(paste("UCL =", round(r_stats()$UCL, 3)))
+  output$lcl_text  <- renderText(paste("LCL =", round(r_stats()$LCL, 3)))
   
-  output$xbar_text     <- renderText({ req(xbar_stats()); paste("X̄ =", round(xbar_stats()$Xbar_bar, 3)) })
-  output$xbar_ucl_text <- renderText({ req(xbar_stats()); paste("X̄ UCL =", round(xbar_stats()$Xbar_UCL, 3)) })
-  output$xbar_lcl_text <- renderText({ req(xbar_stats()); paste("X̄ LCL =", round(xbar_stats()$Xbar_LCL, 3)) })
+  output$xbar_text     <- renderText({ req(xbar_stats()); paste("CL  =", round(xbar_stats()$Xbar_bar, 3)) })
+  output$xbar_ucl_text <- renderText({ req(xbar_stats()); paste("UCL =", round(xbar_stats()$Xbar_UCL, 3)) })
+  output$xbar_lcl_text <- renderText({ req(xbar_stats()); paste("LCL =", round(xbar_stats()$Xbar_LCL, 3)) })
   
   # ---- Tables ----
   output$original_data_table <- renderDT({
@@ -629,6 +737,7 @@ server <- function(input, output, session) {
       options = list(pageLength = 10)
     )
   })
+  
   
 }
 
