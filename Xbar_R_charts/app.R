@@ -111,7 +111,7 @@ ui <- fluidPage(
       div(
         style = "
     background-color:#E6F4EA;
-    padding:12px;
+    padding:1px;
     border-radius:8px;
     margin-bottom:15px;
     border:2px solid #2C6F5A;
@@ -119,15 +119,15 @@ ui <- fluidPage(
   ",
         
         HTML("
-    <div style='font-size:26px; font-weight:700; color:#18392B;'>
-      📊 X̄ & R Chatr Manual
+    <div style='font-size:24px; font-weight:700; color:#18392B;'>
+      📊 X̄ & R Chart Manual
     </div>
     
-    <div style='font-size:15px; color:#2C6F5A; margin-top:6px;'>
+    <div style='font-size:13px; color:#2C6F5A; margin-top:6px;'>
       X̄ & R Charts • SPC • Process Monitoring
     </div>
     
-    <div style='font-size:22px; margin-top:8px;'>
+    <div style='font-size:20px; margin-top:8px;'>
       📈 ✔️ 🧪
     </div>
   "),
