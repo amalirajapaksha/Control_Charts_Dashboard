@@ -8,6 +8,8 @@ library(shinyjs)
 
 
 
+
+
 set.seed(123)
 
 # -----------------------------
@@ -123,13 +125,6 @@ ui <- fluidPage(
       📊 X̄ & R Chart Manual
     </div>
     
-    <div style='font-size:13px; color:#2C6F5A; margin-top:6px;'>
-      X̄ & R Charts • SPC • Process Monitoring
-    </div>
-    
-    <div style='font-size:20px; margin-top:8px;'>
-      📈 ✔️ 🧪
-    </div>
   "),
         
         br(),
@@ -204,7 +199,7 @@ ui <- fluidPage(
     border-left:5px solid #5f7f6e
 
 ;
-    font-size:22px;
+    font-size:18px;
     margin-bottom:12px;
   ",
                    HTML("
@@ -561,7 +556,7 @@ server <- function(input, output, session) {
     
     if (any(ooc)) {
       div(
-        style = "color: red; font-weight: bold; font-size: 18px; margin-bottom: 10px;",
+        style = "color: red; font-weight: bold; font-size: 14px; margin-bottom: 10px;",
         HTML("⚠️ Some Phase I points are out-of-control! Before simply deleting them, try to identify whether there are <b>non-random patterns</b> and look for <b>assignable causes</b>. 
            If you determine a point is due to special cause, you can delete it in the 'Phase I Data' tab.")
       )
@@ -599,7 +594,9 @@ server <- function(input, output, session) {
     df$PointColor <- with(df, ifelse(OutOfControl, "red",
                                      ifelse(Phase == "Phase I", "black", "blue")))
     
-    ggplot(df, aes(Subgroup, R)) +
+      ggplot(df, aes(
+      Subgroup,
+      R)) +
       geom_line(aes(group = 1), color = "#1f4e79") +
       geom_point(aes(color = PointColor), size = 3) +
       scale_color_identity() +
@@ -617,6 +614,7 @@ server <- function(input, output, session) {
       ) +
       theme_minimal(base_size = 13) +
       theme(plot.title = element_text(face = "bold", hjust = 0.5))
+    
   })
   
   
@@ -645,7 +643,9 @@ server <- function(input, output, session) {
     df$PointColor <- with(df, ifelse(OutOfControl, "red",
                                      ifelse(Phase == "Phase I", "black", "blue")))
     
-    ggplot(df, aes(Subgroup, Xbar)) +
+      ggplot(df, aes(
+      Subgroup,
+      Xbar)) +
       # Lines for each phase
       geom_line(aes(group = 1), color = "#1f794e") +
       # Points with proper color
@@ -668,6 +668,7 @@ server <- function(input, output, session) {
       ) +
       theme_minimal(base_size = 13) +
       theme(plot.title = element_text(face = "bold", hjust = 0.5))
+    
   })
   
   
