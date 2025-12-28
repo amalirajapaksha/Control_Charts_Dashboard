@@ -1,7 +1,9 @@
 # X̄ & R Charts
 
 This Shiny app allows users to explore **X̄ (mean) and R (range) control charts** for quality control. It is developed **for learning purposes** and demonstrates Phase I and Phase II charting.
-![X̄ & R Chart Screenshot](images/Xbar-R chart.png)
+
+<img src="images/Xbar-R%20Shiny.png" alt="X̄ & R Chart Screenshot" width="600"/>
+
 
 ---
 
@@ -12,6 +14,18 @@ This Shiny app allows users to explore **X̄ (mean) and R (range) control charts
 - Interactive R and X̄ charts with out-of-control points highlighted.
 - Delete rows and reset the process.
 - Download a user manual (PDF).
+
+<!-- Side-by-side R and X̄ charts -->
+<table>
+<tr>
+<td>
+<img src="images/R%20chart.png" alt="R Chart Example" width="500"/>
+</td>
+<td>
+<img src="images/Xbar%20chart.png" alt="X̄ Chart Example" width="500"/>
+</td>
+</tr>
+</table>  
 
 ---
 
