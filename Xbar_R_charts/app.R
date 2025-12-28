@@ -12,9 +12,9 @@ library(shinyjs)
 
 set.seed(123)
 
-# -----------------------------
-# Sample datasets
-# -----------------------------
+
+# Sample datasets -----------------------------
+
 sample1 <- data.frame(
   Subgroup = 1:15,
   X1 = rnorm(15, 10, 0.3),
@@ -51,9 +51,9 @@ sample_list <- list(
   "Sample 3: Random variation" = sample3
 )
 
-# -----------------------------
-# UI
-# -----------------------------
+
+# UI -----------------------------
+
 ui <- fluidPage(
   useShinyjs(),
   div(
@@ -88,7 +88,7 @@ ui <- fluidPage(
   color: #000000 !important;  /* default text color */
 }
 
-/* ===== Top Title Strip ===== */
+/* Top Title Strip */
 .title-strip {
   background-color: #2C6F5A;   /* Dark green strip */
   padding: 8px;
@@ -137,7 +137,7 @@ ui <- fluidPage(
       ),
       
       HTML("<h3 style='color:#18392B; font-weight:bold; font-size:28px; margin-bottom:10px;'>Phase I: Add Data</h3>"),
-      HTML("<p style='font-size:14px; color:#2C6F5A;'>20–25 samples recommended</p>"),
+      HTML("<p style='font-size:14px; color:#800000;'>20–25 samples recommended</p>"),
       selectInput("sample_choice", "Choose Sample Dataset:",
                   choices = names(sample_list)),
       fileInput(
@@ -160,8 +160,8 @@ ui <- fluidPage(
       
       div(style = "border-top: 2px solid #2C6F5A; margin: 50px 0;"),
       
-      
       HTML("<h3 style='color:#18392B; font-weight:bold; font-size:28px; margin-top:20px;'>Phase II: Add One Subgroup</h3>"),
+      HTML("<p style='font-size:14px; color:#800000;'>Ensures all observations are entered before submission.</p>"),
       uiOutput("phase2_inputs"),
       
       actionButton("add_phase2", "Add Phase II Subgroup",
@@ -173,7 +173,6 @@ ui <- fluidPage(
     
     mainPanel(
       tabsetPanel(
-        
         tabPanel("Charts",
                  uiOutput("phase1_warnings"),
                  wellPanel(
@@ -242,36 +241,38 @@ ui <- fluidPage(
   )
 )
 
-# -----------------------------
-# SERVER
-# -----------------------------
+
+# SERVER ----------------------------
+
 server <- function(input, output, session) {
   
   
-  # ---- Original dataset ----
+  # Original dataset 
   original_data <- reactiveVal(sample1)
+  
   
   # Phase I sample size (n)
   phase1_n <- reactive({
     df <- original_data()
-    ncol(df) - 1   # exclude Subgroup column
+    ncol(df) - 1   
   })
   
   
+  # Phase I locking 
+  phase1_locked <- reactiveVal(FALSE)
   
+  
+  # Create Phase II data structure
   empty_phase2_df <- function(n) {
     df <- data.frame(Subgroup = integer())
     for (i in 1:n) df[[paste0("X", i)]] <- numeric()
     df
   }
   
-  
   phase2_data <- reactiveVal(data.frame())
   
   
-  
-  phase1_locked <- reactiveVal(FALSE)
-  
+  # phase I sample dataset selection
   observeEvent(input$sample_choice, {
     original_data(sample_list[[input$sample_choice]])
     
@@ -286,6 +287,7 @@ server <- function(input, output, session) {
   })
   
   
+  # user-uploaded Phase I data files
   observeEvent(input$file_upload, {
     req(input$file_upload)
     
@@ -302,7 +304,6 @@ server <- function(input, output, session) {
     
     df <- as.data.frame(df)
     
-    # ---- FORCE numeric conversion (all except first column) ----
     colnames(df)[1] <- "Subgroup"
     
     df[-1] <- lapply(df[-1], function(x) {
@@ -324,7 +325,8 @@ server <- function(input, output, session) {
     
   })
   
-  
+ 
+  # Lock Phase I after finalized the control limite 
   observeEvent(input$lock_phase1, {
     phase1_locked(TRUE)
     
@@ -336,11 +338,13 @@ server <- function(input, output, session) {
   })
   
   
-  
+  # Reset X̄ statistics when Phase I data changes
   observeEvent(original_data(), {
     xbar_stats(NULL)
   })
   
+  
+  # Create Phase II input boxes based on Phase I subgroup size
   output$phase2_inputs <- renderUI({
     n <- phase1_n()
     req(n)
@@ -351,9 +355,7 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
+  # Add a new Phase II subgroup after validation
   observeEvent(input$add_phase2, {
     req(xbar_stats())
     
@@ -374,7 +376,7 @@ server <- function(input, output, session) {
     
     phase2_data(bind_rows(phase2_data(), new_row))
     
-    # Reset Phase II inputs
+    
     for (i in 1:n) updateNumericInput(session, paste0("p2_x", i), value = NA)
   })
   
@@ -390,7 +392,7 @@ server <- function(input, output, session) {
   })
   
   
-  
+  # Disable all Phase I controls once Phase I is locked
   observe({
     locked <- phase1_locked()
     
@@ -403,7 +405,7 @@ server <- function(input, output, session) {
   
   
   
-  # ---- Delete selected rows ----
+  # Delete selected rows in phase I data
   observeEvent(input$delete_rows, {
     sel <- input$original_data_table_rows_selected
     if (length(sel) == 0) return()
@@ -413,13 +415,13 @@ server <- function(input, output, session) {
   })
   
   
+  # Delete selected rows in phase II data
   observeEvent(input$delete_phase2_rows, {
     sel <- input$phase2_data_table_rows_selected
     if (length(sel) == 0) return()
     
     df <- phase2_data()[-sel, , drop = FALSE]
     
-    # Re-index Phase II subgroup numbers
     if (nrow(df) > 0) {
       df$Subgroup <- seq_len(nrow(df))
     }
@@ -428,7 +430,7 @@ server <- function(input, output, session) {
   })
   
   
-  # ---- R chart stats ----
+  # R chart stats 
   r_stats <- reactive({
     df <- original_data()
     values <- df %>% select(where(is.numeric)) %>% select(-Subgroup)
@@ -463,7 +465,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---- Xbar stats (manual) ----
+  # Xbar stats 
   xbar_stats <- reactiveVal(NULL)
   
   
@@ -502,8 +504,7 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
+  # Phase II monitoring statistics
   phase2_stats <- reactive({
     req(nrow(phase2_data()) > 0)
     
@@ -524,7 +525,7 @@ server <- function(input, output, session) {
   })
   
   
-  # ---- Out-of-control subgroups (R OR X̄) ----
+  # Out-of-control subgroups
   ooc_subgroups <- reactive({
     df <- original_data()
     ooc <- rep(FALSE, nrow(df))
@@ -540,6 +541,8 @@ server <- function(input, output, session) {
     ooc
   })
   
+  
+  # User manual download
   output$download_manual <- downloadHandler(
     filename = function() {
       "Xbar_R_User_Manual.pdf"
@@ -550,7 +553,7 @@ server <- function(input, output, session) {
   )
   
   
-  # ---- Show warning if any out-of-control points exist ----
+  # Phase I out-of-control warning
   output$phase1_warnings <- renderUI({
     ooc <- ooc_subgroups()
     
@@ -568,7 +571,7 @@ server <- function(input, output, session) {
   
   
   
-  # ---- Charts ----
+  # R chart
   output$r_chart <- renderPlot({
     s <- r_stats()
     
@@ -618,7 +621,7 @@ server <- function(input, output, session) {
   })
   
   
-  
+  # X̄ chart
   output$xbar_chart <- renderPlot({
     s <- xbar_stats()
     req(s)
@@ -646,20 +649,15 @@ server <- function(input, output, session) {
       ggplot(df, aes(
       Subgroup,
       Xbar)) +
-      # Lines for each phase
       geom_line(aes(group = 1), color = "#1f794e") +
-      # Points with proper color
       geom_point(aes(color = PointColor), size = 3) +
       scale_color_identity() +
-      # Horizontal lines for CL, UCL, LCL
       geom_hline(yintercept = s$Xbar_bar, linetype = "dashed", color = "black") +
       geom_hline(yintercept = s$Xbar_UCL, linetype = "solid", color = "red") +
       geom_hline(yintercept = s$Xbar_LCL, linetype = "solid", color = "red") +
-      # Labels for CL, UCL, LCL
       annotate("text", x = 0.5, y = s$Xbar_bar, label = "CL", hjust = 0, vjust = -0.5, color = "black") +
       annotate("text", x = 0.5, y = s$Xbar_UCL, label = "UCL", hjust = 0, vjust = -0.5, color = "red") +
       annotate("text", x = 0.5, y = s$Xbar_LCL, label = "LCL", hjust = 0, vjust = 1.5, color = "red") +
-      # Vertical line separating phases
       {if (!is.null(p2)) geom_vline(xintercept = nrow(p1) + 0.5, linetype = "dashed", color = "gray40")} +
       labs(
         title = "X̄ Chart (Phase I Limits, Phase II Monitoring)",
@@ -673,6 +671,7 @@ server <- function(input, output, session) {
   
   
   
+  # Application reset
   observeEvent(input$reset_all, {
     
     # Reset Phase I data
@@ -702,7 +701,7 @@ server <- function(input, output, session) {
   })
   
   
-  # ---- Text summaries ----
+  # Text summaries
   output$rbar_text <- renderText(paste("CL  =", round(r_stats()$Rbar, 3)))
   output$ucl_text  <- renderText(paste("UCL =", round(r_stats()$UCL, 3)))
   output$lcl_text  <- renderText(paste("LCL =", round(r_stats()$LCL, 3)))
@@ -711,7 +710,7 @@ server <- function(input, output, session) {
   output$xbar_ucl_text <- renderText({ req(xbar_stats()); paste("UCL =", round(xbar_stats()$Xbar_UCL, 3)) })
   output$xbar_lcl_text <- renderText({ req(xbar_stats()); paste("LCL =", round(xbar_stats()$Xbar_LCL, 3)) })
   
-  # ---- Tables ----
+  # Tables
   output$original_data_table <- renderDT({
     df <- original_data()
     df$OutOfControl <- ooc_subgroups()
@@ -726,9 +725,13 @@ server <- function(input, output, session) {
       formatStyle("OutOfControl", color = "transparent")
   })
   
+  
+  # statistics tables
   output$r_data_table <- renderDT(r_stats()$R_df)
   output$xbar_data_table <- renderDT({ req(xbar_stats()); xbar_stats()$Xbar_df })
   
+  
+  # Phase II data table
   output$phase2_data_table <- renderDT({
     req(nrow(phase2_data()) > 0)
     
