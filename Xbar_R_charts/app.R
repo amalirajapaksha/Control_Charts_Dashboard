@@ -659,11 +659,11 @@ server <- function(input, output, session) {
       annotate("text", x = 0.5, y = s$Xbar_UCL, label = "UCL", hjust = 0, vjust = -0.5, color = "red") +
       annotate("text", x = 0.5, y = s$Xbar_LCL, label = "LCL", hjust = 0, vjust = 1.5, color = "red") +
       {if (!is.null(p2)) geom_vline(xintercept = nrow(p1) + 0.5, linetype = "dashed", color = "gray40")} +
-      labs(
-        title = "X̄ Chart (Phase I Limits, Phase II Monitoring)",
-        x = "Subgroup",
-        y = "Sample Mean (X̄)"
-      ) +
+        labs(
+          title = expression(bold(bar(X)~"Chart (Phase I Limits, Phase II Monitoring)")),
+          x = "Subgroup",
+          y = expression("Sample Mean ("*bar(X)*")")
+        ) +
       theme_minimal(base_size = 13) +
       theme(plot.title = element_text(face = "bold", hjust = 0.5))
     
