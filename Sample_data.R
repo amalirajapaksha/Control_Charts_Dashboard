@@ -4,16 +4,21 @@ set.seed(123)
 # Sample datasets -----------------------------
 
 sample1 <- data.frame(
-  Subgroup = 1:25,
-  X1 = rnorm(25, 10, 0.3),
-  X2 = rnorm(25, 10, 0.3),
-  X3 = rnorm(25, 10, 0.3),
-  X4 = rnorm(25, 10, 0.3),
-  X5 = rnorm(25, 10, 0.3)
+  Subgroup = 1:20,
+  X1 = rnorm(20, 10, 0.3),
+  X2 = rnorm(20, 10, 0.3),
+  X3 = rnorm(20, 10, 0.3),
+  X4 = rnorm(20, 10, 0.3),
+  X5 = rnorm(20, 10, 0.3)
 )
 
-sample1[5, 2]  <- sample1[5, 2] + 3
-sample1[12, 6] <- sample1[12, 6] - 2.2
+sample1[5, 2]  <- sample1[5, 2] + 2.5
+sample1[12, 6] <- sample1[12, 6] - 2.7
+sample1[8, 3] <- sample1[8, 3] + 0.75
+sample1[9, 5] <- sample1[9, 5] - 0.95
+sample1[3, 5] <- sample1[3, 5] - 1.05
+sample1[16, 3] <- sample1[16, 3] - 0.95
+sample1[10, 6] <- sample1[10, 6] + 0.5
 
 sample2 <- data.frame(
   Subgroup = 1:20,
