@@ -145,9 +145,16 @@ ui <- fluidPage(
       HTML("<p style='font-size:14px; color:#800000;'>20–25 samples recommended</p>"),
       selectInput("sample_choice", "Choose Sample Dataset:",
                   choices = names(sample_list)),
+      
+      div(
+        "OR",
+        style = "text-align: left; font-weight: bold; 
+           margin-top: 25px; margin-bottom: 30px; font-size: 16px;"
+      ),
+      
       fileInput(
         "file_upload",
-        "Upload CSV or Excel (Wide Format)",
+        "Upload Your Own CSV / Excel file (Wide Format):",
         accept = c(".csv", ".xlsx")
       )
       ,
@@ -467,12 +474,20 @@ server <- function(input, output, session) {
     n <- ncol(values)
     
     d3d4 <- data.frame(
-      n = 2:10,
-      D3 = c(0,0,0,0,0.076,0.136,0.184,0.223,0.256),
-      D4 = c(3.267,2.574,2.282,2.114,2.004,1.924,1.864,1.816,1.777)
+      n = 2:25,
+      D3 = c(0, 0, 0, 0, 0,
+             0.076, 0.136, 0.184, 0.223, 0.256,
+             0.283, 0.307, 0.328, 0.347, 0.363,
+             0.378, 0.391, 0.403, 0.415, 0.425,
+             0.434, 0.443, 0.451, 0.459),
+      D4 = c(3.267, 2.574, 2.282, 2.114, 2.004, 1.924,
+             1.864, 1.816, 1.777, 1.744, 1.717, 1.693,
+             1.672, 1.653, 1.637, 1.622, 1.608, 1.597,
+             1.585, 1.575, 1.566, 1.557, 1.548, 1.541)
     )
     
-    if (n <= 10) {
+    
+    if (n <= 25) {
       D3 <- d3d4$D3[d3d4$n == n]
       D4 <- d3d4$D4[d3d4$n == n]
     } else {
@@ -729,13 +744,13 @@ server <- function(input, output, session) {
   
   
   # Text summaries
-  output$rbar_text <- renderText(paste("CL  =", round(r_stats()$Rbar, 3)))
-  output$ucl_text  <- renderText(paste("UCL =", round(r_stats()$UCL, 3)))
-  output$lcl_text  <- renderText(paste("LCL =", round(r_stats()$LCL, 3)))
+  output$rbar_text <- renderText(paste("CL  =", round(r_stats()$Rbar, 7)))
+  output$ucl_text  <- renderText(paste("UCL =", round(r_stats()$UCL, 7)))
+  output$lcl_text  <- renderText(paste("LCL =", round(r_stats()$LCL, 7)))
   
-  output$xbar_text     <- renderText({ req(xbar_stats()); paste("CL  =", round(xbar_stats()$Xbar_bar, 3)) })
-  output$xbar_ucl_text <- renderText({ req(xbar_stats()); paste("UCL =", round(xbar_stats()$Xbar_UCL, 3)) })
-  output$xbar_lcl_text <- renderText({ req(xbar_stats()); paste("LCL =", round(xbar_stats()$Xbar_LCL, 3)) })
+  output$xbar_text     <- renderText({ req(xbar_stats()); paste("CL  =", round(xbar_stats()$Xbar_bar, 7)) })
+  output$xbar_ucl_text <- renderText({ req(xbar_stats()); paste("UCL =", round(xbar_stats()$Xbar_UCL, 7)) })
+  output$xbar_lcl_text <- renderText({ req(xbar_stats()); paste("LCL =", round(xbar_stats()$Xbar_LCL, 7)) })
   
   # Tables
   output$original_data_table <- renderDT({
